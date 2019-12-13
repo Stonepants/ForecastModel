@@ -1,0 +1,910 @@
+'''''''''''''''''''''''''''''
+'
+'           Made by - Jais Astrup
+'
+'''''''''''''''''''''''''''''
+Sub loaddatatest()
+
+If Range("C3").Value <> Date Then
+Range("C3").Value = Date
+ThisWorkbook.RefreshAll
+End If
+
+If Sheets.Count = 2 Then
+
+Sheets.Add after:=Sheets("Solver")
+ActiveSheet.Name = "vLager"
+
+    With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
+        Connections("Query - vLager"), Destination:=Range("$A$1")).TableObject
+        .RowNumbers = False
+        .PreserveFormatting = True
+        .RefreshStyle = 1
+        .AdjustColumnWidth = True
+        .ListObject.DisplayName = "Table_vLager"
+        .Refresh
+    End With
+    
+Sheets.Add after:=ActiveSheet
+ActiveSheet.Name = "vLagerBeholdning"
+
+    With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
+        Connections("Query - vLagerBeholdning"), Destination:=Range("$A$1")).TableObject
+        .RowNumbers = False
+        .PreserveFormatting = True
+        .RefreshStyle = 1
+        .AdjustColumnWidth = True
+        .ListObject.DisplayName = "Table_vLagerBeholdning"
+        .Refresh
+    End With
+    
+Sheets.Add after:=ActiveSheet
+ActiveSheet.Name = "vSalgsOrdre"
+
+    With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
+        Connections("Query - vSalgsOrdre"), Destination:=Range("$A$1")).TableObject
+        .RowNumbers = False
+        .PreserveFormatting = True
+        .RefreshStyle = 1
+        .AdjustColumnWidth = True
+        .ListObject.DisplayName = "Table_vSalgsOrdre"
+        .Refresh
+    End With
+
+If Sheets("vSalgsOrdre").Range("E2").Value > 0 Then
+    Dim Addr As String
+    Addr = "E2:E" & Range("E1").End(xlDown).Row
+    Range(Addr) = Evaluate(Replace("IF(&="""","""",IFERROR(-1*&,&))", "&", Addr))
+End If
+
+Sheets.Add after:=ActiveSheet
+ActiveSheet.Name = "vKoebsOrdre"
+
+    With ActiveSheet.ListObjects.Add(SourceType:=4, Source:=ActiveWorkbook. _
+        Connections("Query - vKoebsOrdre"), Destination:=Range("$A$1")).TableObject
+        .RowNumbers = False
+        .PreserveFormatting = True
+        .RefreshStyle = 1
+        .AdjustColumnWidth = True
+        .ListObject.DisplayName = "Table_vKoebsOrdre"
+        .Refresh
+    End With
+    
+ElseIf Sheets.Count = 1 Then
+MsgBox "Need Solver Sheet for later use"
+MsgBox "I made a dummy so the code can run, but seriously try and find that sheet"
+Sheets.Add after:=ActiveSheet
+ActiveSheet.Name = "Solver"
+
+Else
+    Dim xWs As Worksheet
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    For Each xWs In Application.ActiveWorkbook.Worksheets
+        If xWs.Name <> "Command" And xWs.Name <> "Solver" Then
+            xWs.Delete
+        End If
+    Next
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+    MsgBox "Cleared Sheets: Please rerun"
+End If
+Sheets("Command").Activate
+End Sub
+Sub MorphData()
+
+Dim m As Long
+Dim n As Long
+Dim i As Long
+Dim j As Long
+
+Sheets("Command").Activate
+m = Range("G2", Range("G2").End(xlDown)).Rows.Count - 1
+If m < 100 Then
+Sheets("vLager").Activate
+    Columns("A").TextToColumns Destination:=Range("A1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+
+    Columns("B").TextToColumns Destination:=Range("B1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+    
+    n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+    For i = 1 To n
+        For j = 1 To m
+            If Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("G3").Offset(j - 1, 0).Value Then
+                If Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("H3").Offset(j - 1, 0).Value Then
+                    Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("I3").Offset(j - 1, 0).Value
+                    Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("J3").Offset(j - 1, 0).Value
+                End If
+            End If
+        Next j
+    Next i
+    
+Sheets("vLagerBeholdning").Activate
+    Columns("A").TextToColumns Destination:=Range("A1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+
+    Columns("B").TextToColumns Destination:=Range("B1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+    
+    n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+    For i = 1 To n
+        For j = 1 To m
+            If Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("G3").Offset(j - 1, 0).Value Then
+                If Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("H3").Offset(j - 1, 0).Value Then
+                    Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("I3").Offset(j - 1, 0).Value
+                    Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("J3").Offset(j - 1, 0).Value
+                End If
+            End If
+        Next j
+    Next i
+    
+Sheets("vSalgsOrdre").Activate
+    Columns("A").TextToColumns Destination:=Range("A1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+
+    Columns("B").TextToColumns Destination:=Range("B1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+    
+    n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+    For i = 1 To n
+        For j = 1 To m
+            If Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("G3").Offset(j - 1, 0).Value Then
+                If Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("H3").Offset(j - 1, 0).Value Then
+                    Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("I3").Offset(j - 1, 0).Value
+                    Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("J3").Offset(j - 1, 0).Value
+                End If
+            End If
+        Next j
+    Next i
+    
+Sheets("vKoebsOrdre").Activate
+    Columns("A").TextToColumns Destination:=Range("A1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+
+    Columns("B").TextToColumns Destination:=Range("B1"), DataType:=xlDelimited, _
+        TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, _
+        Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo _
+        :=Array(1, 1), TrailingMinusNumbers:=True
+    
+    n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+    For i = 1 To n
+        For j = 1 To m
+            If Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("G3").Offset(j - 1, 0).Value Then
+                If Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("H3").Offset(j - 1, 0).Value Then
+                    Range("A2").Offset(i - 1, 0).Value = Sheets("Command").Range("I3").Offset(j - 1, 0).Value
+                    Range("B2").Offset(i - 1, 0).Value = Sheets("Command").Range("J3").Offset(j - 1, 0).Value
+                End If
+            End If
+        Next j
+    Next i
+End If
+
+Sheets("Command").Activate
+End Sub
+Sub SettingUpStock()
+
+Dim m As Long
+Dim n As Long
+
+Dim xWs As Worksheet
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    For Each xWs In Application.ActiveWorkbook.Worksheets
+        If xWs.Name = "Lager" Then
+            xWs.Delete
+        End If
+    Next
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+
+Sheets.Add after:=Sheets("vKoebsOrdre")
+ActiveSheet.Name = "Lager"
+
+Dim crit As Range
+Dim rgdata As Range
+Dim Output As Range
+
+Sheets("vLagerBeholdning").Activate
+Sheets("vLagerBeholdning").Range("H1:H100").Value = Sheets("Command").Range("E2:E101").Value
+
+Set crit = Range("H1", Range("H1").End(xlDown))
+Set rgdata = Range("A1").CurrentRegion
+Set Output = Range("J1")
+    rgdata.AdvancedFilter Action:=xlFilterCopy, _
+        CriteriaRange:=crit, copytorange:=Output, Unique:=False
+
+n = Range("J1").CurrentRegion.Rows.Count
+m = Range("J1").CurrentRegion.Columns.Count
+
+Sheets("Lager").Range("A1").Resize(n, m).Value = Range("J1").CurrentRegion.Value
+
+Sheets("vLagerBeholdning").Range("H1:N200000").Value = ""
+
+
+Sheets("vSalgsOrdre").Activate
+Sheets("vSalgsOrdre").Range("H1:H100").Value = Sheets("Command").Range("E2:E101").Value
+
+Set crit = Range("H1", Range("H1").End(xlDown))
+Set rgdata = Range("A1").CurrentRegion
+Set Output = Range("J1")
+    rgdata.AdvancedFilter Action:=xlFilterCopy, _
+        CriteriaRange:=crit, copytorange:=Output, Unique:=False
+
+n = Range("J1").CurrentRegion.Rows.Count
+m = Range("J1").CurrentRegion.Columns.Count
+Sheets("Lager").Activate
+Range("A1").End(xlDown).Offset(1, 0).Resize(n, m).Value = Sheets("vSalgsOrdre").Range("J1").CurrentRegion.Offset(1, 0).Value
+
+Sheets("vSalgsOrdre").Range("H1:N200000").Value = ""
+
+Dim IDrange As Range
+Dim colrange As Range
+Dim Sizerange As Range
+Dim Data As Range
+
+Sheets("Lager").Activate
+
+Set IDrange = Range("A2", Range("A2").End(xlDown))
+Set colrange = Range("B2", Range("B2").End(xlDown))
+Set Sizerange = Range("C2", Range("C2").End(xlDown))
+Set Data = Range("A2", Range("F2").End(xlDown))
+
+Sheets("Lager").Sort.SortFields.Clear
+Sheets("Lager").Sort.SortFields.Add2 Key:=IDrange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("Lager").Sort.SortFields.Add2 Key:=colrange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("Lager").Sort.SortFields.Add2 Key:=Sizerange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+    With Sheets("Lager").Sort
+        .SetRange Data
+        .Header = xlNo
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+
+Dim i As Long
+
+Sheets("Lager").Activate
+Range("H1:H200000").Value = ""
+
+Range("D2", Range("D2").End(xlDown)).AdvancedFilter Action:=xlFilterCopy, _
+        copytorange:=Range("H1"), Unique:=True
+
+n = Range("A2", Range("A2").End(xlDown)).Rows.Count + _
+    Range("H2", Range("H2").End(xlDown)).Rows.Count
+i = 0
+Do While i < n
+i = i + 1
+    
+    If Range("A2").Offset(i + 1, 0) = "" Then
+        If Range("C2").Offset(i - 1, 0) <> Range("C2").Offset(i, 0) Then
+            Rows(i + 2).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+            Range("A2").Offset(i, 0).Value = "BREAK"
+        Exit Do
+        End If
+    End If
+    
+    If Range("C2").Offset(i - 1, 0) <> Range("C2").Offset(i, 0) Then
+        Rows(i + 2).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+        Range("A2").Offset(i, 0).Value = "BREAK"
+        i = i + 1
+    End If
+
+Loop
+
+If Range("A2").End(xlDown).Value <> "BREAK" Then
+Range("A2").End(xlDown).Offset(1, 0).Value = "BREAK"
+End If
+
+Dim x As Range
+Dim total As Variant
+
+n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+i = 0
+Do While i < n
+i = i + 1
+
+    If Range("A2").Offset(i - 1, 0).Value = "BREAK" Then
+        Set x = Range(Range("E2").Offset(i - 2, 0).End(xlUp), Range("E2").Offset(i - 2, 0))
+        If x.Rows.Count > 3 Then
+            total = Application.Evaluate("=SUM(" & x.Address(0, 0) & ")")
+            Range("F2").Offset(i - 2).Value = total
+            
+        ElseIf Range("E2").Offset(i - 3, 0).Value = "" Then
+            Range("F2").Offset(i - 2).Value = Range("E2").Offset(i - 2, 0).Value
+        Else
+            total = Application.Evaluate("=SUM(" & x.Address(0, 0) & ")")
+            Range("F2").Offset(i - 2).Value = total
+        End If
+        i = i + 1
+    End If
+        
+    If Range("A2").Offset(i - 1, 0).Value = "" Then
+        Exit Do
+    End If
+Loop
+
+Dim k As Long
+
+Sheets("Lager").Activate
+Range("H1:H200000").Value = ""
+
+n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+
+k = 0
+i = 0
+
+Do While i < n
+    i = i + 1
+    If Range("F2").Offset(i - 1, 0).Value <> "" Then
+        Range(Range("H2").Offset(k, 0), Range("J2").Offset(k, 0)).Value = Range(Range("A2").Offset(i - 1, 0), Range("C2").Offset(i - 1, 0)).Value
+        Range("K2").Offset(k, 0).Value = Range("F2").Offset(i - 1).Value
+        k = k + 1
+    End If
+Loop
+Sheets("Command").Activate
+End Sub
+
+Sub RegressionData()
+
+Dim m As Long
+Dim n As Long
+
+Dim xWs As Worksheet
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    For Each xWs In Application.ActiveWorkbook.Worksheets
+        If xWs.Name = "Model" Then
+            xWs.Delete
+        End If
+    Next
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+
+Sheets.Add after:=Sheets("Lager")
+ActiveSheet.Name = "Model"
+
+Dim crit As Range
+Dim rgdata As Range
+Dim Output As Range
+
+Sheets("vLager").Activate
+Sheets("vLager").Range("H1:H100").Value = Sheets("Command").Range("E2:E101").Value
+
+Set crit = Range("H1", Range("H1").End(xlDown))
+Set rgdata = Range("A1").CurrentRegion
+Set Output = Range("K1")
+
+    rgdata.AdvancedFilter Action:=xlFilterCopy, _
+        CriteriaRange:=crit, copytorange:=Output, Unique:=False
+
+n = Range("K1").CurrentRegion.Rows.Count
+m = Range("K1").CurrentRegion.Columns.Count
+
+Sheets("Model").Range("A1").Resize(n, m).Value = Range("K1").CurrentRegion.Value
+
+Sheets("vLager").Range("H1:P200000").Value = ""
+
+Dim IDrange As Range
+Dim colrange As Range
+Dim Sizerange As Range
+Dim Daterange As Range
+Dim Data As Range
+
+Sheets("Model").Activate
+
+Set IDrange = Range("A2", Range("A2").End(xlDown))
+Set colrange = Range("B2", Range("B2").End(xlDown))
+Set Sizerange = Range("C2", Range("C2").End(xlDown))
+Set Daterange = Range("F2", Range("F2").End(xlDown))
+Set Data = Range("A2", Range("F2").End(xlDown))
+
+Sheets("Model").Sort.SortFields.Clear
+Sheets("Model").Sort.SortFields.Add2 Key:=IDrange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("Model").Sort.SortFields.Add2 Key:=colrange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("Model").Sort.SortFields.Add2 Key:=Sizerange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("Model").Sort.SortFields.Add2 Key:=Daterange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+        With Sheets("Model").Sort
+        .SetRange Data
+        .Header = xlNo
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+Dim i As Long
+
+Sheets("Model").Activate
+Range("H1:H200000").Value = ""
+
+Range("D2", Range("D2").End(xlDown)).AdvancedFilter Action:=xlFilterCopy, _
+        copytorange:=Range("K1"), Unique:=True
+
+n = Range("A2", Range("A2").End(xlDown)).Rows.Count + _
+    Range("K2", Range("K2").End(xlDown)).Rows.Count
+
+Range("K1:K200000").Value = ""
+If Range("A2").End(xlDown).Value <> "BREAK" Then
+i = 0
+Do While i < n
+i = i + 1
+    
+    If Range("A2").Offset(i + 1, 0).Value = "" Then
+        If Range("C2").Offset(i - 1, 0) <> Range("C2").Offset(i, 0) Then
+            Rows(i + 2).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+            Range("A2").Offset(i, 0).Value = "BREAK"
+            Range("A2").Offset(i + 2, 0).Value = "BREAK"
+        Else
+            Range("A2").Offset(i + 1, 0).Value = "BREAK"
+        End If
+        
+        Exit Do
+    End If
+    
+    If Range("C2").Offset(i - 1, 0) <> Range("C2").Offset(i, 0) Then
+        Rows(i + 2).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+        Range("A2").Offset(i, 0).Value = "BREAK"
+        i = i + 1
+    End If
+
+Loop
+End If
+
+Dim counter As Long
+Dim d As Long
+Dim y As Range
+Dim x As Range
+Dim reg As Variant
+
+n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+d = Range("F2").Value
+
+Range("G2").Value = Range("E2").Value
+Range("H2").Value = 0
+counter = Range("G2").Value
+i = 0
+Do While i < n
+i = i + 1
+If Range("A2").Offset(i, 0).Value = "BREAK" Then
+    Set y = Range(Range("G2").Offset(i - 1, 0).End(xlUp), Range("G2").Offset(i - 1, 0))
+    Set x = Range(Range("H2").Offset(i - 1, 0).End(xlUp), Range("H2").Offset(i - 1, 0))
+    If y.Rows.Count < 5 Then
+        Range("I2").Offset(i - 1, 0).Value = "Few Obs"
+    Else
+        reg = Application.Evaluate("=LINEST(" & y.Address(0, 0) & "," & x.Address(0, 0) & ",False,False)")
+        Range("I2").Offset(i - 1, 0).Value = reg(1)
+    End If
+    counter = 0
+    d = Range("F2").Offset(i + 1, 0).Value
+    i = i + 1
+End If
+counter = counter + Range("E2").Offset(i, 0).Value
+Range("G2").Offset(i, 0).Value = counter
+Range("H2").Offset(i, 0).Value = Range("F2").Offset(i, 0).Value - d
+Loop
+
+Dim k As Long
+Dim j As Long
+
+Sheets("Model").Activate
+
+n = Range("A2", Range("A2").End(xlDown)).Rows.Count
+
+k = 0
+i = 0
+Do While i < n
+    i = i + 1
+    If Range("A2").Offset(i, 0).Value = "BREAK" Then
+        Range(Range("K2").Offset(k, 0), Range("M2").Offset(k, 0)).Value = Range(Range("A2").Offset(i - 1, 0), Range("C2").Offset(i - 1, 0)).Value
+        Range(Range("N2").Offset(k, 0), Range("O2").Offset(k, 0)).Value = Range(Range("H2").Offset(i - 1, 0), Range("I2").Offset(i - 1, 0)).Value
+        k = k + 1
+    End If
+Loop
+
+Sheets("Model").Activate
+m = Sheets("Model").Range("K2", Range("K2").End(xlDown)).Rows.Count
+
+Sheets("Lager").Activate
+n = Sheets("Lager").Range("H2", Range("H2").End(xlDown)).Rows.Count
+
+For i = 1 To n
+    For j = 1 To m
+        If Range("H2").Offset(i - 1, 0).Value = Sheets("Model").Range("K2").Offset(j - 1, 0).Value Then
+            If Range("I2").Offset(i - 1, 0).Value = Sheets("Model").Range("L2").Offset(j - 1, 0).Value Then
+                If Range("J2").Offset(i - 1, 0).Value = Sheets("Model").Range("M2").Offset(j - 1, 0).Value Then
+                    Range("L2").Offset(i - 1, 0).Value = Sheets("Model").Range("N2").Offset(j - 1, 0).Value
+                    Range("M2").Offset(i - 1, 0).Value = Sheets("Model").Range("O2").Offset(j - 1, 0).Value
+                End If
+            End If
+        End If
+    Next j
+Next i
+
+
+Range("K2", Range("K2").End(xlDown)).Offset(0, 3).Value = Range("K2", Range("K2").End(xlDown)).Value
+Range("K2", Range("K2").End(xlDown)).Value = ""
+
+
+
+Sheets("Lager").Activate
+
+n = Sheets("Lager").Range("H2", Range("H2").End(xlDown)).Rows.Count
+
+For i = 1 To n
+    If Range("L2").Offset(i - 1, 0).Value < 200 Then
+        Range("L2:M2").Offset(i - 1, 0).Interior.ColorIndex = 6
+    End If
+Next i
+
+Sheets("Lager").Range("M1").Value = "Sales/day"
+Sheets("Lager").Range("L1").Value = "Days used for model"
+
+Sheets("Command").Activate
+End Sub
+
+Sub Forecast()
+
+Sheets("Lager").Activate
+
+Range(Range("N2").End(xlDown), Range("CA2")).Offset(0, 1).Interior.ColorIndex = xlNone
+Range(Range("N2").End(xlDown), Range("CA1")).Offset(0, 1).Value = ""
+Range("K2:K1000000").Value = ""
+
+Dim w As Long
+
+w = Sheets("command").Range("C16").Value
+
+Dim i As Long
+
+For i = 0 To w
+    Range("N1").Offset(0, i).Value = i
+Next i
+
+Dim m As Long
+Dim n As Long
+
+n = Range("N2", Range("N2").End(xlDown)).Rows.Count
+m = Range("O1", Range("O1").End(xlToRight)).Columns.Count
+
+Dim x As Range
+Dim y As Range
+Dim z As Range
+Dim j As Long
+Dim k As Long
+
+For j = 1 To n
+    If Range("M2").Offset(j - 1, 0).Value <> "Few Obs" And Range("M2").Offset(j - 1, 0).Value <> "" Then
+        For k = 1 To m
+            Set x = Range("N2").Offset(j - 1, 0)
+            Set y = Range("M2").Offset(j - 1, 0)
+            Set z = Range("O1").Offset(0, k - 1)
+            temp = Application.WorksheetFunction.Max(0, x.Value - y.Value * z.Value * 7)
+            Max = Application.WorksheetFunction.Round(temp, 0)
+            Range("O2").Offset(j - 1, k - 1).Value = Max
+        Next k
+    End If
+Next j
+
+Dim crit As Range
+Dim rgdata As Range
+Dim Output As Range
+
+Sheets("vKoebsOrdre").Activate
+
+Sheets("vKoebsOrdre").Range("H1:P100000").Value = ""
+
+Sheets("vKoebsOrdre").Range("H1:H100").Value = Sheets("Command").Range("E2:E101").Value
+
+Set crit = Range("H1", Range("H1").End(xlDown))
+Set rgdata = Range("A1").CurrentRegion
+Set Output = Range("I1")
+
+    rgdata.AdvancedFilter Action:=xlFilterCopy, _
+        CriteriaRange:=crit, copytorange:=Output, Unique:=False
+
+Sheets("vKoebsOrdre").Range("H1:H100").Value = ""
+
+Dim IDrange As Range
+Dim colrange As Range
+Dim Sizerange As Range
+Dim Daterange As Range
+Dim Data As Range
+
+Set IDrange = Range("I2", Range("I2").End(xlDown))
+Set colrange = Range("J2", Range("J2").End(xlDown))
+Set Sizerange = Range("K2", Range("K2").End(xlDown))
+Set Daterange = Range("N2", Range("N2").End(xlDown))
+Set Data = Range("I2", Range("N2").End(xlDown))
+
+Sheets("vKoebsOrdre").Sort.SortFields.Clear
+Sheets("vKoebsOrdre").Sort.SortFields.Add2 Key:=IDrange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("vKoebsOrdre").Sort.SortFields.Add2 Key:=colrange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("vKoebsOrdre").Sort.SortFields.Add2 Key:=Sizerange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+Sheets("vKoebsOrdre").Sort.SortFields.Add2 Key:=Daterange _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:= _
+        xlSortTextAsNumbers
+    With Sheets("vKoebsOrdre").Sort
+        .SetRange Data
+        .Header = xlNo
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+Dim l As Long
+
+m = Range("I1", Range("I1").End(xlDown)).Rows.Count - 1
+
+If m < 1000000 Then
+    Range("O1").Value = Sheets("Command").Range("C3").Value
+    i = 0
+    Do While i < m
+    i = i + 1
+        temp = Application.WorksheetFunction.Max((Range("N1").Offset(i, 0).Value - CDbl(Range("O1").Value)), 0)
+        week = Application.WorksheetFunction.RoundUp(temp / 7, 0)
+        Range("O2").Offset(i - 1, 0).Value = week
+    Loop
+
+    Sheets("Lager").Activate
+    n = Sheets("Lager").Range("H2", Range("H2").End(xlDown)).Rows.Count
+
+    For i = 1 To n
+        For j = 1 To m
+            If Range("H2").Offset(i - 1, 0).Value = Sheets("vKoebsOrdre").Range("I2").Offset(j - 1, 0).Value Then
+                If Range("I2").Offset(i - 1, 0).Value = Sheets("vKoebsOrdre").Range("J2").Offset(j - 1, 0).Value Then
+                    If Range("J2").Offset(i - 1, 0).Value = Sheets("vKoebsOrdre").Range("K2").Offset(j - 1, 0).Value Then
+                        If Range("M2").Offset(i - 1, 0).Value <> "Few Obs" Then
+                      
+                            For k = 0 To w
+                                If Sheets("Lager").Range("N1").Offset(0, k).Value = Sheets("vKoebsOrdre").Range("O2").Offset(j - 1, 0).Value Then
+                                    Sheets("Lager").Range("N2").Offset(i - 1, k).Value = Sheets("Lager").Range("N2").Offset(i - 1, k).Value + Sheets("vKoebsOrdre").Range("M2").Offset(j - 1, 0).Value
+                                    For l = 1 To w - k
+                                        Sheets("Lager").Range("N2").Offset(i - 1, k).Offset(0, l).Value = Sheets("Lager").Range("N2").Offset(i - 1, k).Value - 7 * Sheets("Lager").Range("N1").Offset(, l).Value * Sheets("Lager").Range("M2").Offset(i - 1, 0).Value
+                                    Next l
+                                End If
+                            Next k
+                        
+                            Sheets("vKoebsOrdre").Range("I2").Offset(j - 1, 0).Value = "Used"
+                        Else
+                            Range("M2").Offset(i - 1, 0).Interior.ColorIndex = 3
+                            Sheets("vKoebsOrdre").Range("I2").Offset(j - 1, 0).Value = "Used"
+                        End If
+                    End If
+                End If
+            End If
+        Next j
+    Next i
+
+    n = Range("N2", Range("N2").End(xlDown)).Rows.Count
+    m = Range("N1", Range("N1").End(xlToRight)).Columns.Count
+
+    For j = 1 To n
+        If Range("M2").Offset(j - 1, 0).Value <> "Few Obs" And Range("M2").Offset(j - 1, 0).Value <> "" Then
+            For k = 1 To m
+                temp = Application.WorksheetFunction.Max(0, Range("N2").Offset(j - 1, k - 1).Value)
+                Max = Application.WorksheetFunction.Round(temp, 0)
+                Range("N2").Offset(j - 1, k - 1).Value = Max
+            Next k
+        End If
+    Next j
+
+End If
+
+Sheets("Lager").Activate
+
+
+n = Range("N2", Range("N2").End(xlDown)).Rows.Count
+m = Range("N1", Range("N1").End(xlToRight)).Columns.Count
+
+Range("N2").Resize(n, m).Interior.Color = xlNone
+Range("K2").Resize(n, 1).Value = ""
+For j = 1 To n
+    If Range("M2").Offset(j - 1, 0).Value <> "Few Obs" And Range("M2").Offset(j - 1, 0).Value <> "" Then
+    For k = 1 To w
+        If Application.WorksheetFunction.Sum(Range(Range("N2").Offset(j - 1, 0), Range("N2").Offset(j - 1, 0).End(xlToRight))) <> 0 Then
+            If Range("N2").Offset(j - 1, k - 1).Value <= (365 / 100) * Sheets("Command").Range("C14").Value * Range("M2").Offset(j - 1, 0).Value Then
+                If Range("N2").Offset(j - 1, k - 1).Interior.ColorIndex <> 6 Then
+                    Range("K2").Offset(j - 1, 0).Value = Range("N1").Offset(0, k - 1).Value
+                End If
+                If k = w Then
+                    Range("N2").Offset(j - 1, k).Interior.ColorIndex = 6
+                ElseIf k = 1 Then
+                    Range(Range("N2").Offset(j - 1, k), Range("N2").Offset(j - 1, k - 1).End(xlToRight)).Interior.ColorIndex = 6
+                Else
+                    Range(Range("N2").Offset(j - 1, k - 1), Range("N2").Offset(j - 1, k - 1).End(xlToRight)).Interior.ColorIndex = 6
+                End If
+            End If
+        End If
+        If Range("N2").Offset(j - 1, k - 1).Value < Range("N2").Offset(j - 1, k).Value Then
+            Range("K2").Offset(j - 1, 0).Value = ""
+            If k = w Then
+                Range("N2").Offset(j - 1, k).Interior.ColorIndex = xlNone
+            Else
+                Range(Range("N2").Offset(j - 1, k), Range("N2").Offset(j - 1, k).End(xlToRight)).Interior.ColorIndex = xlNone
+            End If
+        End If
+    Next k
+    End If
+Next j
+
+Sheets("Lager").Range("N1").Value = "Stock\Week"
+
+End Sub
+
+
+Sub PurchaseStrategy()
+Sheets("Solver").Activate
+Range("C2:E101").Value = ""
+Range("C2:E101").Interior.ColorIndex = xlNone
+
+Dim counter As Integer
+Dim i As Long
+Dim n As Long
+counter = 0
+If Sheets("Lager").Range("O2").Value <> "" Then
+    Sheets("Lager").Activate
+    n = Range("N2", Range("N2").End(xlDown)).Rows.Count
+    For i = 1 To n
+        If Sheets("Lager").Range("K2").Offset(i - 1, 0).Value <> "" Then
+            If Sheets("Lager").Range("H2").Offset(i - 1, 0).Value = Sheets("Solver").Range("C2").Offset(counter - 1, 0).Value Then
+                If Sheets("Lager").Range("I2").Offset(i - 1, 0).Value = Sheets("Solver").Range("D2").Offset(counter - 1, 0).Value Then
+                    If Sheets("Lager").Range("K2").Offset(i - 1, 0).Value < Sheets("Solver").Range("E2").Offset(counter - 1, 0).Value Then
+                    Sheets("Solver").Range("C2:D2").Offset(counter - 1, 0).Value = Sheets("Lager").Range("H2:I2").Offset(i - 1, 0).Value
+                    Sheets("Solver").Range("E2").Offset(counter - 1, 0).Value = Sheets("Lager").Range("K2").Offset(i - 1, 0).Value
+                    End If
+                Else
+                counter = counter + 1
+                Sheets("Solver").Range("C2:D2").Offset(counter - 1, 0).Value = Sheets("Lager").Range("H2:I2").Offset(i - 1, 0).Value
+                Sheets("Solver").Range("E2").Offset(counter - 1, 0).Value = Sheets("Lager").Range("K2").Offset(i - 1, 0).Value
+                End If
+            Else
+            counter = counter + 1
+            Sheets("Solver").Range("C2:D2").Offset(counter - 1, 0).Value = Sheets("Lager").Range("H2:I2").Offset(i - 1, 0).Value
+            Sheets("Solver").Range("E2").Offset(counter - 1, 0).Value = Sheets("Lager").Range("K2").Offset(i - 1, 0).Value
+            End If
+        End If
+    Next i
+Else
+    MsgBox "Need a forecast to run, or put anything in cell O2 on sheet Lager"
+End If
+
+Sheets("Command").Activate
+Dim o As Long
+Dim m As Long
+Dim j As Long
+Dim k As Long
+
+o = Range("E2", Range("E2").End(xlDown)).Rows.Count - 1
+If o < 1000000 Then
+    Sheets("Solver").Activate
+
+    m = Range("C1", Range("C1").End(xlDown)).Rows.Count - 1
+
+    If m < 1000000 Then
+        For j = 1 To m
+            For k = 1 To o
+                If Sheets("Solver").Range("C2").Offset(j - 1, 0).Value = Sheets("Command").Range("E3").Offset(k - 1, 0).Value And Sheets("Solver").Range("E2").Offset(j - 1, 0).Value < Sheets("Command").Range("D3").Offset(k - 1, 0).Value Then
+                    Sheets("Solver").Range("C2:E2").Offset(j - 1, 0).Interior.ColorIndex = 6
+                End If
+            Next k
+        Next j
+    Else
+        MsgBox "Could not find ItemID in Solver sheet"
+    End If
+Else
+    MsgBox "Could not find ItemID in Command sheet"
+End If
+End Sub
+
+Sub ExtractingStock()
+Range("G1:J11").Value = ""
+Dim n As Long
+Dim i As Long
+Application.ScreenUpdating = False
+If Selection.Columns.Count = 3 And Selection.Rows.Count = 1 Then
+    Dim arr As Variant
+    arr = Selection.Value
+    Sheets("Lager").Activate
+    n = Range("N2", Range("N2").End(xlDown)).Rows.Count
+    i = 0
+    Do While i < n
+    i = i + 1
+        If Range("H2").Offset(i - 1, 0).Value = arr(1, 1) And Range("I2").Offset(i - 1, 0).Value = arr(1, 2) Then
+            Dim a As Range
+            Set a = Range("H2").Offset(i - 1, 0)
+            Exit Do
+        End If
+    Loop
+    Do While i < n
+    i = i + 1
+        If Range("H2").Offset(i - 1, 0).Value <> arr(1, 1) Or Range("I2").Offset(i - 1, 0).Value <> arr(1, 2) Then
+            Dim b As Range
+            Set b = Range("H2").Offset(i - 2, 0)
+            Exit Do
+        End If
+    Loop
+    
+Dim m As Long
+
+Sheets("Solver").Range("G2:G8").Value = 1 / 100
+Sheets("Solver").Range("H2:H8").Value = 1000
+Sheets("Solver").Range("I2:I8").Value = "Dummy"
+Sheets("Solver").Range("J2:J8").Value = 0
+
+    m = Range(a, b).Rows.Count
+    Sheets("Solver").Range("G2").Resize(m, 1).Value = Sheets("Lager").Range(a, b).Offset(, 5).Value
+    Sheets("Solver").Range("H2").Resize(m, 1).Value = Sheets("Lager").Range(a, b).Offset(, 6 + arr(1, 3)).Value
+    Sheets("Solver").Range("I2").Resize(m, 1).Value = Sheets("Lager").Range(a, b).Offset(, 2).Value
+    Sheets("Solver").Range("H1").Value = arr(1, 1)
+    Sheets("Solver").Range("I1").Value = arr(1, 2)
+    Sheets("Solver").Range("J2").Resize(m, 1).Value = 0
+    Sheets("Solver").Activate
+
+Application.ScreenUpdating = True
+Else
+MsgBox "Please select ItemID, ColID, WeekVariable from solver sheet"
+End If
+End Sub
+
+Sub DetermineOptimalPurchase()
+Dim a As Long
+Dim b As Long
+
+a = Range("L12").Value
+
+    SolverChange CellRef:="$J$12", Relation:=2, FormulaText:=CStr(Range("G12").Value)
+    SolverOk SetCell:="$L$12", MaxMinVal:=1, ValueOf:=0, ByChange:=Range("J2", Range("J2").End(xlDown)), _
+        Engine:=2, EngineDesc:="GRG Nonlinear"
+SolverSolve UserFinish:=True
+SolverSolve UserFinish:=True
+SolverSolve UserFinish:=True
+
+b = Range("L12").Value
+
+If b - a < 1 Then
+   MsgBox "Seems to be close to the optimal strategy, or slow at converging"
+Else
+    MsgBox "Strategy could potentially be improved if solved furter"
+End If
+End Sub
+
+
+
